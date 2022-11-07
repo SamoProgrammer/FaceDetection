@@ -1,3 +1,4 @@
+from time import sleep
 import cv2
 import numpy as np
 import sqlite3
@@ -13,7 +14,7 @@ rec.read("trainningData.yml")
 
 fontface = cv2.FONT_HERSHEY_SIMPLEX
 fontscale = 1
-fontcolor = (0, 255, 0)
+fontcolor = (0, 0, 255)
 #cv2.putText(im, str(Id), (x,y+h), fontface, fontscale, fontcolor)
 
 
@@ -28,31 +29,28 @@ def getProfile(id):
     return profile
 
 
+peresentStudents = []
 while (True):
     ret, img = cam.read()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = faceDetect.detectMultiScale(gray, 1.3, 5)
+    faces = faceDetect.detectMultiScale(gray, 1.2, 5)
     for (x, y, w, h) in faces:
         cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
         id, conf = rec.predict(gray[y:y+h, x:x+w])
-        print(id)
         profile = getProfile(id)
+        cv2.putText(
+            img, str(profile[1]), (x, y+h+20), fontface, fontscale, fontcolor)
         if (profile != None):
-            cv2.putText(
-                img, "Name : "+str(profile[1]), (x, y+h+20), fontface, fontscale, fontcolor)
-            cv2.putText(
-                img, "Age : "+str(profile[2]), (x, y+h+45), fontface, fontscale, fontcolor)
-            cv2.putText(
-                img, "Gender : "+str(profile[3]), (x, y+h+70), fontface, fontscale, fontcolor)
-            cv2.putText(img, "Criminal Records : " +
-                        str(profile[4]), (x, y+h+95), fontface, fontscale, fontcolor)
-        # else:
-            #cv2.putText(img,"Name : Unknown",(x,y+h+20),fontface, fontscale, fontcolor)
-            #cv2.putText(img,"Age : Unknown",(x,y+h+45),fontface, fontscale, fontcolor)
-            #cv2.putText(img,"Gender : Unknown",(x,y+h+70),fontface, fontscale, fontcolor)
-            #cv2.putText(img,"Criminal Records : Unknown",(x,y+h+95),fontface, fontscale, fontcolor)
+            if (peresentStudents.__contains__(profile[1])):
+                continue
+            else:
+                peresentStudents.append(profile[1])
+
+                # sleep(3)
     cv2.imshow("Face", img)
     if (cv2.waitKey(1) == ord('q')):
         break
+    # if (ord('p')):
+        # print(peresentStudents)
 cam.release()
 cv2.destroyAllWindows()
